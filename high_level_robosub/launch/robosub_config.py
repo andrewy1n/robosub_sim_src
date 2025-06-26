@@ -25,19 +25,25 @@ def launch_setup(context, *args, **kwargs):
 		output="screen",
 	)
 
-	# keyInput = Node(
-	# 	package="controls_6dof",
-	# 	executable="listenkey",
-	# 	output="screen",
-	# )
-
-	gate_detector = Node(
-		package="gate_detection",
-		executable="gate_detector_node",
+	keyInput = Node(
+		package="controls_6dof",
+		executable="listenkey",
 		output="screen",
 	)
 
-	return [robosub_bridge, movement, gate_detector]
+	# gate_detector = Node(
+	# 	package="gate_detection",
+	# 	executable="gate_detector_node",
+	# 	output="screen",
+	# )
+
+	# camera_viewer = Node(
+	# 	package="camera_test",
+	# 	executable="show_camera",
+	# 	output="screen",
+	# )	
+
+	return [robosub_bridge, movement, keyInput]
 
 
 def generate_launch_description():

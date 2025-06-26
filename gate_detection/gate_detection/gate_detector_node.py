@@ -9,8 +9,8 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from std_srvs.srv import Trigger
 from rclpy.duration import Duration
 import time
-from .depth_perception import find_gate_distance
-from .gate_detection_yolo import contains_gate, find_gate_center
+# from .depth_perception import find_gate_distance
+# from .gate_detection_yolo import contains_gate, find_gate_center
 
 """
 Based on ROS2 Python Basics module 6.5 multithreading example and adapted code from "plant_detector_multithreading_callbackgroups.py"
@@ -93,10 +93,10 @@ class GateDetectorNode(Node):
 			if self.image1 is not None:
 				self.get_logger().info("Processing images...")
 
-				if contains_gate(self.image1):
-					gate_found = True
-				else:
-					self.get_logger().info("Gate Not Found")
+				# if contains_gate(self.image1):
+				# 	gate_found = True
+				# else:
+				# 	self.get_logger().info("Gate Not Found")
 				
 			
 			time.sleep(0.1)
