@@ -1,0 +1,35 @@
+gate_navigation:
+  ros__parameters:
+    # Gate navigation parameters
+    gate_side: "left"  # "left" or "right"
+    approach_distance: 3.0  # meters
+    through_distance: 5.0   # meters
+    max_velocity: 1.0       # m/s
+    confidence_threshold: 0.5  # YOLO confidence threshold
+    
+    # Pure pursuit parameters
+    lookahead_distance: 2.0    # meters
+    max_steering_angle: 0.5    # radians
+    
+    # Control gains
+    k_linear: 1.0
+    k_angular: 2.0
+    
+    # Velocity limits
+    max_linear_velocity: 2.0   # m/s
+    max_angular_velocity: 1.0  # rad/s
+    min_linear_velocity: 0.1   # m/s
+    
+    # PID gains for velocity control
+    kp_linear: 1.0
+    ki_linear: 0.1
+    kd_linear: 0.05
+    kp_angular: 2.0
+    ki_angular: 0.2
+    kd_angular: 0.1
+    
+    # Navigation modes
+    search_velocity: 0.3       # m/s
+    search_angular_velocity: 0.1  # rad/s
+    approach_velocity_factor: 0.8  # factor of max_velocity
+    through_velocity_factor: 0.8   # factor of max_velocity 

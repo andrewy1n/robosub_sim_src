@@ -84,7 +84,7 @@ class SimCameraCV(Node):
                 return frame
                 
             # Run YOLO inference
-            results = self.model(frame, imgsz=640, conf=0.25)
+            results = self.model(frame)
             
             # Process detections
             for result in results:
