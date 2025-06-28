@@ -388,22 +388,16 @@ class GateNavigator(Node):
                 cv2.putText(debug_image, f"Lateral gain: {self.lateral_gain}", (10, 100), 
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             
-            # Display image directly on screen
+            # Publish debug image to ROS topic
             try:
-                # Resize image if it's too large for display
-                height, width = debug_image.shape[:2]
-                if width > 800 or height > 600:
-                    scale = min(800/width, 600/height)
-                    new_width = int(width * scale)
-                    new_height = int(height * scale)
-                    debug_image = cv2.resize(debug_image, (new_width, new_height))
-                
-                cv2.imshow('Gate Navigation Debug', debug_image)
-                cv2.waitKey(1)  # Update the window (1ms delay)
-                
-                self.get_logger().debug(f"Displayed debug image: {debug_image.shape}")
+                ros_image = self.bridge.cv2_to_imgmsg(debug_image, "bgr8")
+                ros_image.header.stamp = self.get_clock().now().to_msg()
+                ros_image.header.frame_id = "camera_link"
+                self.debug_pub.publish(ros_image)
+                self.get_logger().debug(f"Published debug image to /debug_image topic: {debug_image.shape}")
             except Exception as e:
-                self.get_logger().error(f"Error displaying debug image: {e}")
+                self.get_logger().error(f"Error publishing debug image: {e}")
+        
         else:
             self.get_logger().debug("No current image available, creating test image")
             # Create a test image if no camera image is available
@@ -416,12 +410,15 @@ class GateNavigator(Node):
             cv2.putText(test_image, "Debug image test", (50, 280), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
             
+            # Publish test image to ROS topic
             try:
-                cv2.imshow('Gate Navigation Debug', test_image)
-                cv2.waitKey(1)
-                self.get_logger().debug("Displayed test debug image")
+                ros_image = self.bridge.cv2_to_imgmsg(test_image, "bgr8")
+                ros_image.header.stamp = self.get_clock().now().to_msg()
+                ros_image.header.frame_id = "camera_link"
+                self.debug_pub.publish(ros_image)
+                self.get_logger().debug("Published test debug image to /debug_image topic")
             except Exception as e:
-                self.get_logger().error(f"Error displaying test debug image: {e}")
+                self.get_logger().error(f"Error publishing test debug image: {e}")
 
     def calculate_lateral_velocity(self, gate_center_x, gate_center_y):
         """
