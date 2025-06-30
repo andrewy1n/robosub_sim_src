@@ -4,7 +4,7 @@ from rclpy.node import Node
 from pynput import keyboard
 from pynput.keyboard import Key, KeyCode
 
-from std_msgs.msg import Int32MultiArray
+from geometry_msgs.msg import Twist
 
 KEYCODE_FORWARD = KeyCode.from_char('w')
 KEYCODE_BACKWARD = KeyCode.from_char('s')
@@ -34,15 +34,15 @@ TIMEOUT_SECOND = 0
 class ListenKey(Node):
 	"""
 	ListenKey class receives the information regarding the keys currently pressed,
-	converts this data into 6 dimensional vector each representating 1) Forward/Backward,
-	2) Strafe Left/Right, 3) Surface/Dieve, 4) Yaw Counterclockwise/Clockwise, 5) Pitch Left/Right
-	6) Roll Forward/Backward, and sends this data to 'publishvector' node through 'string_topic'.
+	converts this data into Twist velocity commands each representing 1) Forward/Backward,
+	2) Strafe Left/Right, 3) Surface/Dive, 4) Yaw Counterclockwise/Clockwise, 5) Pitch Left/Right
+	6) Roll Forward/Backward, and sends this data through 'cmd_vel' topic.
 
 	Attributes:
-		publisher_: The node where 'listenkey' node sends the 6 dimensional vector
+		publisher_: The node where 'listenkey' node sends the Twist velocity commands
 		keypresses: The set of keys currently pressed
-		movement_rotation: The 6 dimensional vector which will be sent to 'vector_topic' node
-						   The vector will be updated whenver there is a change in the vector 
+		movement_rotation: The 6 dimensional vector which will be sent as Twist message
+						   The vector will be updated whenever there is a change in the vector 
 						   by comparing with current_movement_rotation in publish method
 	"""
 	def __init__(self):
@@ -52,7 +52,7 @@ class ListenKey(Node):
 		Initialize the class
 		"""
 		super().__init__('listenkey')
-		self.publisher_ = self.create_publisher(Int32MultiArray, 'vector_topic', QUEUE_SIZE)
+		self.publisher_ = self.create_publisher(Twist, 'cmd_vel', QUEUE_SIZE)
 		
 		# Keyboard
 		self.keypresses = set()
@@ -105,7 +105,7 @@ class ListenKey(Node):
 
 		Check the current 6 dimensional vector (current_movement_rotation) based on the keys currently pressed.
 		If this current_movement_rotation vector is different from the self.movement_rotation, 
-		replace the self.movement_rotation into current_movement_rotation and send this vector info to 'publishvector' node through 'vector_topic'.
+		replace the self.movement_rotation into current_movement_rotation and send this vector info as Twist message through 'cmd_vel'.
 		Otherwise, no action is occurred.
 		"""
 		current_movement_rotation = [0, 0, 0, 0, 0, 0]
@@ -163,8 +163,16 @@ class ListenKey(Node):
 
 		# If there is no change in vector, do not send the message 
 		if self.movement_rotation != current_movement_rotation:	 
-			msg = Int32MultiArray()
-			msg.data = self.movement_rotation = current_movement_rotation
+			msg = Twist()
+			# Map the 6-element vector to Twist message
+			msg.linear.x = float(current_movement_rotation[0])   # forward/backward
+			msg.linear.y = float(current_movement_rotation[1])   # strafe left/right
+			msg.linear.z = float(current_movement_rotation[2])   # surface/dive
+			msg.angular.x = float(current_movement_rotation[5])  # roll
+			msg.angular.y = float(current_movement_rotation[4])  # pitch
+			msg.angular.z = float(current_movement_rotation[3])  # yaw
+			
+			self.movement_rotation = current_movement_rotation
 			self.publisher_.publish(msg)
 
 def main(args=None):	

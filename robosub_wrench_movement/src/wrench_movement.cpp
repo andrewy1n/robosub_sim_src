@@ -1,7 +1,7 @@
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/int32.hpp>
-#include <std_msgs/msg/int32_multi_array.hpp>
+#include <geometry_msgs/msg/twist.hpp>
 
 #include <gz/transport/Node.hh>
 #include <gz/math/Quaternion.hh>
@@ -36,8 +36,8 @@ class WrenchMovement : public rclcpp::Node {
 			drag_force_.Set(0.0, 0.0, 0.0);
 			drag_torque_.Set(0.0, 0.0, 0.0);
 
-			control_sub_ = this->create_subscription<std_msgs::msg::Int32MultiArray>(
-				"/vector_topic", 10,
+			control_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
+				"/cmd_vel", 10,
 				std::bind(&WrenchMovement::control_callback, this, std::placeholders::_1)
 			);
 
@@ -102,26 +102,25 @@ class WrenchMovement : public rclcpp::Node {
 			}
 		}
 
-		void control_callback(const std_msgs::msg::Int32MultiArray::SharedPtr msg) {
-			std::vector<int> data = msg->data;
-
+		void control_callback(const geometry_msgs::msg::Twist::SharedPtr msg) {
 			gz::math::Vector3d lookVector = 	prev_orientation_.RotateVector(gz::math::Vector3d(1, 0, 0));
 			gz::math::Vector3d rightVector = 	prev_orientation_.RotateVector(gz::math::Vector3d(0, 1, 0));
 			gz::math::Vector3d upVector = 		prev_orientation_.RotateVector(gz::math::Vector3d(0, 0, 1));
 			//RCLCPP_INFO(this->get_logger(), "Orientation - %.2f, %.2f, %.2f, %.2f \n", prev_orientation_.W(), prev_orientation_.X(), prev_orientation_.Y(), prev_orientation_.Z());
 			//RCLCPP_INFO(this->get_logger(), "LookVector - %.2f, %.2f, %.2f \n", lookVector.X(), lookVector.Y(), lookVector.Z());
-			//RCLCPP_INFO(this->get_logger(), "Control - %d, %d, %d, %d, %d, %d \n", data[0], data[1], data[2], data[3], data[4], data[5]);
+			//RCLCPP_INFO(this->get_logger(), "Control - linear: %.2f, %.2f, %.2f, angular: %.2f, %.2f, %.2f \n", 
+			//	msg->linear.x, msg->linear.y, msg->linear.z, msg->angular.x, msg->angular.y, msg->angular.z);
 			
 			thrust_force_ = (
-				lookVector 	* data[0] * force_magnitude_ + 
-				rightVector * data[1] * force_magnitude_ +
-				upVector 	* data[2] * force_magnitude_
+				lookVector 	* msg->linear.x * force_magnitude_ + 
+				rightVector * msg->linear.y * force_magnitude_ +
+				upVector 	* msg->linear.z * force_magnitude_
 			);
 
 			thrust_torque_ = (
-				lookVector 	* data[5] * torque_magnitude_ +
-				rightVector * data[4] * torque_magnitude_ +
-				upVector 	* data[3] * torque_magnitude_
+				lookVector 	* msg->angular.x * torque_magnitude_ +
+				rightVector * msg->angular.y * torque_magnitude_ +
+				upVector 	* msg->angular.z * torque_magnitude_
 			);
 
 		}
@@ -162,7 +161,7 @@ class WrenchMovement : public rclcpp::Node {
 		bool first_time_ = true;
 
 		rclcpp::TimerBase::SharedPtr timer_;
-		rclcpp::Subscription<std_msgs::msg::Int32MultiArray>::SharedPtr control_sub_;
+		rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr control_sub_;
 
 		std::shared_ptr<gz::transport::Node> gz_node_;
 		gz::transport::Node::Publisher gz_node_pub_;
