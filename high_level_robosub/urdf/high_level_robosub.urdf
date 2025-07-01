@@ -57,6 +57,61 @@
     </joint>
 	
 
+	<!-- IMU -->
+	<link name="imu_link">
+		<inertial>
+			<mass value="0.015"/>
+			<origin xyz="0 0 0"/>
+			<inertia
+				ixx="0.00001" ixy="0.0" ixz="0.0"
+				iyy="0.00001" iyz="0.0"
+				izz="0.00001"/>
+		</inertial>
+		<visual>
+			<geometry>
+				<box size="0.05 0.05 0.02"/>
+			</geometry>
+			<material name="green">
+				<color rgba="0 1 0 1"/>
+			</material>
+		</visual>
+	</link>
+	<joint name="imu_joint" type="fixed">
+		<origin xyz="0 0 0" rpy="0 0 0"/>
+		<parent link="base_link"/>
+		<child link="imu_link"/>
+    </joint>
+
+	<!-- DVL -->
+	<link name="dvl_link">
+		<inertial>
+			<mass value="3.5"/>
+			<origin xyz="0 0 0"/>
+			<inertia
+				ixx="0.0195872" ixy="0.0" ixz="0.0"
+				iyy="0.0195872" iyz="0.0"
+				izz="0.0151357"/>
+		</inertial>
+		<visual>
+			<geometry>
+				<cylinder radius="0.1" length="0.2"/>
+			</geometry>
+			<material name="yellow">
+				<color rgba="1 1 0 1"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<cylinder radius="0.1" length="0.2"/>
+			</geometry>
+		</collision>
+	</link>
+	<joint name="dvl_joint" type="fixed">
+		<origin xyz="0 0 -0.3" rpy="0 0 0"/>
+		<parent link="base_link"/>
+		<child link="dvl_link"/>
+    </joint>
+
 	<!-- Camera -->
 	<link name="camera_link">
 		<visual>
@@ -105,9 +160,128 @@
 		</sensor>
 	</gazebo>
 
+	<gazebo reference="imu_link">
+		<sensor name="imu_sensor" type="imu">
+			<always_on>true</always_on>
+			<update_rate>100.0</update_rate>
+			<topic>/sensors/imu</topic>
+			<imu>
+				<angular_velocity>
+					<x>
+						<noise type="gaussian">
+							<mean>0.0</mean>
+							<stddev>0.009</stddev>
+						</noise>
+					</x>
+					<y>
+						<noise type="gaussian">
+							<mean>0.0</mean>
+							<stddev>0.009</stddev>
+						</noise>
+					</y>
+					<z>
+						<noise type="gaussian">
+							<mean>0.0</mean>
+							<stddev>0.009</stddev>
+						</noise>
+					</z>
+				</angular_velocity>
+				<linear_acceleration>
+					<x>
+						<noise type="gaussian">
+							<mean>0.0</mean>
+							<stddev>0.021</stddev>
+						</noise>
+					</x>
+					<y>
+						<noise type="gaussian">
+							<mean>0.0</mean>
+							<stddev>0.021</stddev>
+						</noise>
+					</y>
+					<z>
+						<noise type="gaussian">
+							<mean>0.0</mean>
+							<stddev>0.021</stddev>
+						</noise>
+					</z>
+				</linear_acceleration>
+			</imu>
+		</sensor>
+	</gazebo>
+
+	<gazebo reference="dvl_link">
+		<sensor name="dvl_sensor" type="custom" gz:type="dvl">
+			<always_on>true</always_on>
+			<update_rate>8.0</update_rate>
+			<topic>/sensors/dvl/velocity</topic>
+			<gz:dvl>
+				<type>phased_array</type>
+				<arrangement degrees="true">
+					<beam id="1">
+						<aperture>3</aperture>
+						<rotation>-135</rotation>
+						<tilt>25</tilt>
+					</beam>
+					<beam id="2">
+						<aperture>3</aperture>
+						<rotation>135</rotation>
+						<tilt>25</tilt>
+					</beam>
+					<beam id="3">
+						<aperture>3</aperture>
+						<rotation>45</rotation>
+						<tilt>25</tilt>
+					</beam>
+					<beam id="4">
+						<aperture>3</aperture>
+						<rotation>-45</rotation>
+						<tilt>25</tilt>
+					</beam>
+				</arrangement>
+				<tracking>
+					<water_mass_mode>
+						<when>best</when>
+						<water_velocity>
+							<x>0.</x>
+							<y>0.</y>
+							<z>0.</z>
+						</water_velocity>
+						<boundaries>
+							<near>10.</near>
+							<far>100.</far>
+						</boundaries>
+						<bins>10</bins>
+						<noise type="gaussian">
+							<stddev>0.015</stddev>
+						</noise>
+						<visualize>true</visualize>
+					</water_mass_mode>
+					<bottom_mode>
+						<when>best</when>
+						<noise type="gaussian">
+							<stddev>0.005</stddev>
+						</noise>
+						<visualize>true</visualize>
+					</bottom_mode>
+				</tracking>
+				<maximum_range>200.</maximum_range>
+				<minimum_range>0.3</minimum_range>
+				<!-- ENU to FSD -->
+				<reference_frame>0 0 0 3.14 0 -1.57</reference_frame>
+			</gz:dvl>
+		</sensor>
+	</gazebo>
+
 	<gazebo>
 		<plugin name="gz::sim::systems::OdometryPublisher" filename="libgz-sim8-odometry-publisher-system.so">
 			<tf_topic>/model/high_level_robosub/pose</tf_topic>
+		</plugin>
+		
+		<plugin name="gz::sim::systems::Imu" filename="libgz-sim8-imu-system.so">
+		</plugin>
+		<plugin filename="DVLBridge" name="dave_ros_gz_plugins::DVLBridge">
+			<topic>/sensors/dvl/velocity</topic>
 		</plugin>
 	</gazebo>
 </robot>
