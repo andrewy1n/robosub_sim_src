@@ -10,6 +10,9 @@ def launch_setup(context, *args, **kwargs):
 			"/robosub/camera/image@sensor_msgs/msg/Image@gz.msgs.Image",
 			"/robosub/camera/simulated_image@sensor_msgs/msg/Image@gz.msgs.Image",
 			"/robosub/camera/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo",
+			"/sensors/imu@sensor_msgs/msg/Imu@gz.msgs.IMU",
+			"/model/high_level_robosub/odometry@nav_msgs/msg/Odometry@gz.msgs.Odometry",
+			"/model/high_level_robosub/pose@geometry_msgs/msg/PoseArray@gz.msgs.Pose_V",
 		]
 	)
 	robosub_bridge = Node(
