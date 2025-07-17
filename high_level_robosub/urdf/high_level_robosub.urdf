@@ -274,9 +274,14 @@
 	</gazebo>
 
 	<gazebo>
-		<plugin name="gz::sim::systems::OdometryPublisher" filename="libgz-sim8-odometry-publisher-system.so">
-			<tf_topic>/model/high_level_robosub/pose</tf_topic>
-		</plugin>
+		<plugin
+  filename="gz-sim-odometry-publisher-system"
+  name="gz::sim::systems::OdometryPublisher">
+  <odom_frame>map</odom_frame>
+  <robot_base_frame>base_link</robot_base_frame>
+  <dimensions>3</dimensions>
+  <odom_publish_frequency>100</odom_publish_frequency>
+</plugin>
 		
 		<plugin name="gz::sim::systems::Imu" filename="libgz-sim8-imu-system.so">
 		</plugin>
